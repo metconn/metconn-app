@@ -15,18 +15,12 @@ import { registerElement } from "@nativescript/angular";
 import {
   MapView,
   Marker,
-  Polyline,
   Position,
 } from "nativescript-google-maps-sdk";
-import { Color } from "@nativescript/core";
-
 import { Image } from "@nativescript/core";
 import { ImageSource } from "@nativescript/core";
-import { Folder, path, knownFolders } from "tns-core-modules/file-system";
-
 import { Directions } from "@nativescript/directions";
-import { fromFile, fromResource } from "@nativescript/core/image-source";
-import { mapConstants } from "./home.constants";
+import { UpdatePointersService } from "../shared/UpdatePointersService.service"
 // Important - must register MapView plugin in order to use in Angular templates
 registerElement("MapView", () => MapView);
 @Component({
@@ -44,15 +38,11 @@ export class HomeComponent implements OnInit {
   padding = [40, 40, 40, 40];
   mapView: MapView;
   lastCamera: String;
-  cabColor = "#7976EC";
-  metroColor = "#78FD02";
   iconOnScreen = new Image();
 
-  constructor() {}
+  constructor(private updatePointersService:UpdatePointersService) {}
   ngOnInit(): void {
-    console.log("location application");
-/*     geolocation.isEnabled().then(function (isEnabled) {
-      console.log("Enabled: Is Enabled :", isEnabled);
+    geolocation.isEnabled().then(function (isEnabled) {
       if (!isEnabled) {
         geolocation
           .enableLocationRequest()
@@ -60,16 +50,16 @@ export class HomeComponent implements OnInit {
             geolocation
               .getCurrentLocation({ desiredAccuracy: 3 })
               .then((location) => {
-                console.log("location:", JSON.stringify(location));
+                console.log(">>Loading location :",location);
                 this.longitude = location.longitude;
                 this.latitude = location.latitude;
               });
           })
           .catch((s) => {
-            console.log("Map Error:", s);
+            console.log("#Map error...", s);
           });
       }
-    }); */
+    });
   }
 
 /*   public onMapReady(event: MapReadyEvent) {
@@ -77,10 +67,8 @@ export class HomeComponent implements OnInit {
   } */
 
   public onMapReady(event) {
-    console.log("Map Ready");
+    console.log("#Map ready event...");
     this.mapView = event.object;
-    console.log("Setting a marker. ..");
-
     var marker = new Marker();
     marker.position = Position.positionFromLatLng(
       this.latitude,
@@ -91,53 +79,9 @@ export class HomeComponent implements OnInit {
     marker.userData = { index: 1 };
     marker.icon = this.iconOnScreen;
     this.mapView.addMarker(marker);
-    this.addFirstCabRoutePolylines();
-    this.addMetroPolylines();
-    this.addSecondCabRoutePolylines();
-  }
-
-  public addFirstCabRoutePolylines() {
-    this.mapView.removeAllShapes();
-    let firstCabPolyLine = new Polyline();
-    mapConstants.firstCabRoute.map((coordinates) => {
-      firstCabPolyLine.addPoint(
-        Position.positionFromLatLng(coordinates.latitude, coordinates.longitude)
-      );
-    });
-    firstCabPolyLine.visible = true;
-    firstCabPolyLine.geodesic = true;
-    firstCabPolyLine.width = 13;
-    firstCabPolyLine.color = new Color(this.cabColor);
-    this.mapView.addPolyline(firstCabPolyLine);
-  }
-
-  public addMetroPolylines() {
-    // this.routeCordinates = decodePolyline(encodedPolylinePoints);
-    let testPolyLine = new Polyline();
-    mapConstants.metroRoute.map((coordinates) => {
-      testPolyLine.addPoint(
-        Position.positionFromLatLng(coordinates.latitude, coordinates.longitude)
-      );
-    });
-    testPolyLine.visible = true;
-    testPolyLine.geodesic = true;
-    testPolyLine.width = 13;
-    testPolyLine.color = new Color(this.metroColor);
-    this.mapView.addPolyline(testPolyLine);
-  }
-
-  public addSecondCabRoutePolylines() {
-    let secondCabPolyLine = new Polyline();
-    mapConstants.secondCabRoute.map((coordinates) => {
-      secondCabPolyLine.addPoint(
-        Position.positionFromLatLng(coordinates.latitude, coordinates.longitude)
-      );
-    });
-    secondCabPolyLine.visible = true;
-    secondCabPolyLine.geodesic = true;
-    secondCabPolyLine.width = 13;
-    secondCabPolyLine.color = new Color(this.cabColor);
-    this.mapView.addPolyline(secondCabPolyLine);
+    this.updatePointersService.addFirstCabRoutePolylines(this.mapView);
+    this.updatePointersService.addMetroPolylines(this.mapView);
+    this.updatePointersService.addSecondCabRoutePolylines(this.mapView);
   }
 
   public addDirections() {
@@ -174,7 +118,7 @@ export class HomeComponent implements OnInit {
           console.log("Maps app launched.");
         },
         (error) => {
-          console.log(error);
+          console.log("Final Error:",error);
         }
       );
   }
