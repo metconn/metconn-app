@@ -1,0 +1,20 @@
+<ActionBar>
+  <Label text="Metro Easy (Demo)"></Label>
+<!--   <ActionItem icon="res://metrosmall"></ActionItem> -->
+<!-- <ActionItem [icon]="iconOnScreen"></ActionItem> -->
+</ActionBar>
+<!-- <stacklayout> -->
+<!--   <GridLayout>
+    <Image [src]="iconOnScreen" height="100" width="100"></Image>
+  </GridLayout> -->
+  <GridLayout *ngIf="longitude && latitude">
+
+    <MapView #mapView [latitude]="latitude" [longitude]="longitude" [zoom]="zoom" [minZoom]="minZoom"
+      [maxZoom]="maxZoom" [bearing]="bearing" [tilt]="tilt" i-padding="50,50,50,50" [padding]="padding"
+      (mapReady)="onMapReady($event)" (markerSelect)="onMarkerEvent($event)"
+      (markerBeginDragging)="onMarkerEvent($event)" (markerEndDragging)="onMarkerEvent($event)"
+      (markerDrag)="onMarkerEvent($event)" (markerInfoWindowTapped)="onMarkerEvent($event)"
+      (coordinateTapped)="onCoordinateTapped($event)" (cameraChanged)="onCameraChanged($event)"
+      (cameraMove)="onCameraMove($event)"></MapView>
+  </GridLayout>
+<!-- </stacklayout> -->
