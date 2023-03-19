@@ -1,20 +1,23 @@
-<ActionBar>
-  <Label text="Metro Easy (Demo)"></Label>
-<!--   <ActionItem icon="res://metrosmall"></ActionItem> -->
-<!-- <ActionItem [icon]="iconOnScreen"></ActionItem> -->
-</ActionBar>
-<!-- <stacklayout> -->
-<!--   <GridLayout>
-    <Image [src]="iconOnScreen" height="100" width="100"></Image>
-  </GridLayout> -->
-  <GridLayout *ngIf="longitude && latitude">
-
-    <MapView #mapView [latitude]="latitude" [longitude]="longitude" [zoom]="zoom" [minZoom]="minZoom"
-      [maxZoom]="maxZoom" [bearing]="bearing" [tilt]="tilt" i-padding="50,50,50,50" [padding]="padding"
-      (mapReady)="onMapReady($event)" (markerSelect)="onMarkerEvent($event)"
+<GridLayout rows="auto, auto, *, auto" class="page">
+  <GridLayout row="0" columns="*, *, *, *">
+    <Button text="Enable Location" col="0" textWrap="true" (tap)="enableLocationTap()"></Button>
+    <Button text="Get Current Location" col="1" textWrap="true" (tap)="buttonGetLocationTap()"></Button>
+    <Button text="Start Monitoring" col="2" textWrap="true" (tap)="buttonStartTap()"></Button>
+    <Button text="Stop Monitoring" col="3" textWrap="true" (tap)="buttonStopTap()"></Button>
+  </GridLayout>
+  <GridLayout row="1" *ngIf="locations.length" height="400">
+    <MapView #mapView [latitude]="locations[0].latitude" [longitude]="locations[0].longitude" [zoom]="zoom"
+      [minZoom]="minZoom" [maxZoom]="maxZoom" [bearing]="bearing" [tilt]="tilt" i-padding="50,50,50,50"
+      [padding]="padding" (mapReady)="onMapReady($event)" (markerSelect)="onMarkerEvent($event)"
       (markerBeginDragging)="onMarkerEvent($event)" (markerEndDragging)="onMarkerEvent($event)"
       (markerDrag)="onMarkerEvent($event)" (markerInfoWindowTapped)="onMarkerEvent($event)"
       (coordinateTapped)="onCoordinateTapped($event)" (cameraChanged)="onCameraChanged($event)"
       (cameraMove)="onCameraMove($event)"></MapView>
   </GridLayout>
-<!-- </stacklayout> -->
+  <ListView row="2" [items]="locations">
+    <ng-template let-item="item">
+      <Label text="{{ item.latitude + ', ' + item.longitude + ', ' + item.altitude }}"></Label>
+    </ng-template>
+  </ListView>
+  <Button text="Clear" row="3" (tap)="buttonClearTap()"></Button>
+</GridLayout>

@@ -28,8 +28,12 @@ registerElement("MapView", () => MapView);
   templateUrl: "./home.component.html",
 })
 export class HomeComponent implements OnInit {
-  latitude = 18.566060795765072;
-  longitude = 73.77133994999672;
+/*   latitude = 18.566060795765072;
+  longitude = 73.77133994999672; */
+  locations = [];
+  watchIds = [];
+  latitude = 37.4219983;
+  longitude = -122.084;
   zoom = 13;
   minZoom = 0;
   maxZoom = 22;
@@ -42,25 +46,73 @@ export class HomeComponent implements OnInit {
 
   constructor(private updatePointersService:UpdatePointersService) {}
   ngOnInit(): void {
-    geolocation.isEnabled().then(function (isEnabled) {
-      if (!isEnabled) {
-        geolocation
-          .enableLocationRequest()
-          .then((x) => {
-            geolocation
-              .getCurrentLocation({ desiredAccuracy: 3 })
-              .then((location) => {
-                console.log(">>Loading location :",location);
-                this.longitude = location.longitude;
-                this.latitude = location.latitude;
-              });
-          })
-          .catch((s) => {
-            console.log("#Map error...", s);
-          });
-      }
-    });
   }
+
+  public enableLocationTap() {
+    geolocation.isEnabled().then(function (isEnabled) {
+        if (!isEnabled) {
+            geolocation.enableLocationRequest(true, true).then(() => {
+                console.log("User Enabled Location Service");
+            }, (e) => {
+                console.log("Error: " ,(e.message || e));
+            }).catch(ex => {
+                console.log("Unable to Enable Location", ex);
+            });
+        }
+    }, function (e) {
+        console.log("Error: " + (e.message || e));
+    });
+}
+
+public buttonGetLocationTap() {
+  let that = this;
+  geolocation.getCurrentLocation({
+      desiredAccuracy: 3,
+      maximumAge: 5000,
+      timeout: 10000
+  }).then(function (loc) {
+      if (loc) {
+          that.locations.push(loc);
+      }
+  }, function (e) {
+      console.log("Error: " + (e.message || e));
+  });
+}
+
+public buttonStartTap() {
+  try {
+      let that = this;
+      this.watchIds.push(geolocation.watchLocation(
+          function (loc) {
+              if (loc) {
+                  that.locations.push(loc);
+              }
+          },
+          function (e) {
+              console.log("Error: " + e.message);
+          },
+          {
+              desiredAccuracy: 3,
+              updateDistance: 1,
+              updateTime: 3000,
+              minimumUpdateTime: 100
+          }));
+  } catch (ex) {
+      console.log("Error: " + ex.message);
+  }
+}
+
+public buttonStopTap() {
+  let watchId = this.watchIds.pop();
+  while (watchId != null) {
+      geolocation.clearWatch(watchId);
+      watchId = this.watchIds.pop();
+  }
+}
+
+public buttonClearTap() {
+  this.locations.splice(0, this.locations.length);
+}
 
 /*   public onMapReady(event: MapReadyEvent) {
     const map: GoogleMap = event.map;
@@ -77,11 +129,15 @@ export class HomeComponent implements OnInit {
     marker.title = "User Destination";
     marker.snippet = "Baner, India";
     marker.userData = { index: 1 };
-    marker.icon = this.iconOnScreen;
+
+    let imgSrc = ImageSource.fromResourceSync("metrosmall");
+    let image = new Image();
+    image.imageSource = imgSrc;
+    marker.icon = image;
     this.mapView.addMarker(marker);
-    this.updatePointersService.addFirstCabRoutePolylines(this.mapView);
+/*     this.updatePointersService.addFirstCabRoutePolylines(this.mapView);
     this.updatePointersService.addMetroPolylines(this.mapView);
-    this.updatePointersService.addSecondCabRoutePolylines(this.mapView);
+    this.updatePointersService.addSecondCabRoutePolylines(this.mapView); */
   }
 
   public addDirections() {
