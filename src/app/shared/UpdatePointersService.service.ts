@@ -3,6 +3,7 @@ import { Polyline, Position } from 'nativescript-google-maps-sdk';
 import { Color } from "@nativescript/core";
 import { mapConstants } from "../home/home.constants";
 import { ImageSource, Image } from "@nativescript/core";
+import { decode, encode } from "@googlemaps/polyline-codec";
 export interface DataItem {
   id: number
   name: string
@@ -15,6 +16,26 @@ export interface DataItem {
 export class UpdatePointersService {
   cabColor = "#7976EC";
   metroColor = "#78FD02";
+  
+  public getTemporaryLocationForDevelopment(){
+    /* Wakad location */
+    return {"latitude":18.566060795765072,"longitude":73.77133994999672}
+  }
+
+  public drawSamplePolylineGotFromGoogleMap(googleMapRouteResponseData,mapView){
+    let samplePolyLine = new Polyline();
+    var polylineData = decode(googleMapRouteResponseData[0].overview_polyline.points, 5);
+    polylineData.map((coordinates) => {
+      samplePolyLine.addPoint(
+        Position.positionFromLatLng(coordinates[0], coordinates[1])
+      );
+    });
+    samplePolyLine.visible = true;
+    samplePolyLine.geodesic = true;
+    samplePolyLine.width = 13;
+    samplePolyLine.color = new Color(this.cabColor);
+    mapView.addPolyline(samplePolyLine);
+  }
   
   public addFirstCabRoutePolylines(mapView) {
     mapView.removeAllShapes();

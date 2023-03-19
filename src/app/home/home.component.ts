@@ -19,6 +19,9 @@ import {
 } from "nativescript-google-maps-sdk";
 import { Directions } from "@nativescript/directions";
 import { UpdatePointersService } from "../shared/UpdatePointersService.service"
+import { Maps } from "../services/maps.service";
+import { catchError } from "rxjs";
+import { Toasty } from "@triniwiz/nativescript-toasty";
 // Important - must register MapView plugin in order to use in Angular templates
 registerElement("MapView", () => MapView);
 @Component({
@@ -26,12 +29,8 @@ registerElement("MapView", () => MapView);
   templateUrl: "./home.component.html",
 })
 export class HomeComponent implements OnInit {
-/*   latitude = 18.566060795765072;
-  longitude = 73.77133994999672; */
   locations = [];
   watchIds = [];
-  latitude = 37.4219983;
-  longitude = -122.084;
   zoom = 13;
   minZoom = 0;
   maxZoom = 22;
@@ -41,7 +40,7 @@ export class HomeComponent implements OnInit {
   mapView: MapView;
   lastCamera: String;
 
-  constructor(private updatePointersService:UpdatePointersService) {}
+  constructor(private updatePointersService:UpdatePointersService, private googleMaps:Maps) {}
   ngOnInit(): void {
   }
 
@@ -69,7 +68,9 @@ public buttonGetLocationTap() {
       timeout: 10000
   }).then(function (loc) {
       if (loc) {
-          that.locations.push(loc);
+          /* Todo:This line is for dev purpose, get the actual location with the commented line below this line i.e, that.locations.push(loc);*/
+          that.locations.push(that.updatePointersService.getTemporaryLocationForDevelopment());
+          /* that.locations.push(loc); */
       }
   }, function (e) {
       console.log("Error: " + (e.message || e));
@@ -126,9 +127,10 @@ public onCameraChanged($event){
     console.log("#Map ready event...");
     this.mapView = event.object;
     var marker = new Marker();
+    let { latitude, longitude } = this.updatePointersService.getTemporaryLocationForDevelopment();
     marker.position = Position.positionFromLatLng(
-      this.latitude,
-      this.longitude
+      latitude,
+      longitude
     );
     marker.title = "User Destination";
     marker.snippet = "Baner, India";
@@ -139,6 +141,18 @@ public onCameraChanged($event){
     this.updatePointersService.addMetroPolylines(this.mapView);
     this.updatePointersService.addSecondCabRoutePolylines(this.mapView); */
   }
+
+  public getDirectionFromGoogleMaps(){
+    this.googleMaps.getGoogleMapsDirections().subscribe((googleMapResponse)=>{
+      console.log("Got Google Map Response:",googleMapResponse)
+      this.updatePointersService.drawSamplePolylineGotFromGoogleMap(googleMapResponse['routes'],this.mapView);
+    },catchError(error=>{
+      console.log("Direction Error:",error);
+      new Toasty({ text: error}).show();
+      return error;
+    }))
+  }
+
 
   public addDirections() {
     // instantiate the plugin
@@ -151,9 +165,8 @@ public onCameraChanged($event){
     directions
       .navigate({
         from: {
-          // optional, default 'current location'
-          lat: 18.6010917,
-          lng: 73.7641233,
+          lat: this.updatePointersService.getTemporaryLocationForDevelopment().latitude,
+          lng: this.updatePointersService.getTemporaryLocationForDevelopment().longitude,
         },
         to: [
           {
