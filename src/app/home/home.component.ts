@@ -17,8 +17,6 @@ import {
   Marker,
   Position,
 } from "nativescript-google-maps-sdk";
-import { Image } from "@nativescript/core";
-import { ImageSource } from "@nativescript/core";
 import { Directions } from "@nativescript/directions";
 import { UpdatePointersService } from "../shared/UpdatePointersService.service"
 // Important - must register MapView plugin in order to use in Angular templates
@@ -42,7 +40,6 @@ export class HomeComponent implements OnInit {
   padding = [40, 40, 40, 40];
   mapView: MapView;
   lastCamera: String;
-  iconOnScreen = new Image();
 
   constructor(private updatePointersService:UpdatePointersService) {}
   ngOnInit(): void {
@@ -114,6 +111,13 @@ public buttonClearTap() {
   this.locations.splice(0, this.locations.length);
 }
 
+public onCameraMove($event){
+  console.log(">>Camera move called..")
+}
+
+public onCameraChanged($event){
+  console.log(">>Camera Changed event..")
+}
 /*   public onMapReady(event: MapReadyEvent) {
     const map: GoogleMap = event.map;
   } */
@@ -129,11 +133,7 @@ public buttonClearTap() {
     marker.title = "User Destination";
     marker.snippet = "Baner, India";
     marker.userData = { index: 1 };
-
-    let imgSrc = ImageSource.fromResourceSync("metrosmall");
-    let image = new Image();
-    image.imageSource = imgSrc;
-    marker.icon = image;
+    marker.icon = this.updatePointersService.setMapMarkerIcon("metrosmall");
     this.mapView.addMarker(marker);
 /*     this.updatePointersService.addFirstCabRoutePolylines(this.mapView);
     this.updatePointersService.addMetroPolylines(this.mapView);

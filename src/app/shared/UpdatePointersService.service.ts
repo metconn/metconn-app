@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import { Polyline, Position } from 'nativescript-google-maps-sdk';
 import { Color } from "@nativescript/core";
 import { mapConstants } from "../home/home.constants";
-
+import { ImageSource, Image } from "@nativescript/core";
 export interface DataItem {
   id: number
   name: string
@@ -58,5 +58,14 @@ export class UpdatePointersService {
     secondCabPolyLine.width = 13;
     secondCabPolyLine.color = new Color(this.cabColor);
     mapView.addPolyline(secondCabPolyLine);
+  }
+
+  public setMapMarkerIcon(iconName:string){
+    let imgSrc = ImageSource.fromResourceSync(iconName);
+    let image = new Image();
+    image.imageSource = imgSrc;
+    image.width=100;
+    image.height = 100;
+    return image;
   }
 }
